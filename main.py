@@ -26,6 +26,10 @@ def load_data():
         df["genre"].astype(str).str.split("|").str[0].str.strip()
     )
 
+    # 결측치 처리 (장르가 비어있는 경우 '기타'로 변경)
+    df["main_genre"] = df["main_genre"].fillna("기타")
+    df["movieNm"] = df["movieNm"].fillna("제목 없음")
+
     # 2. 날짜 및 수치형 데이터 변환
     df["openDt"] = pd.to_datetime(df["openDt"].astype(str), format="%Y%m%d")
 
@@ -101,11 +105,13 @@ st.info(
 st.divider()
 st.header("📌 Section 2. 장르 및 영화별 총 관객수 분포")
 
+# 트리맵 생성 시 양수 관객수 데이터만 사용 (0 이하 값으로 인한 렌더링 오류 방지)
+treemap_df = df[df["total_audi"] > 0].copy()
+
 # Plotly 트리맵(Treemap) 생성
-# path=[계층1, 계층2] 형태 (장르 -> 영화명)
 fig2 = px.treemap(
-    df,
-    path=["main_genre", "movieNm"],
+    treemap_df,
+    path=[px.Constant("전체 장르"), "main_genre", "movieNm"],
     values="total_audi",
     title="<b>장르별·영화별 총 관객수 트리맵</b>",
     color="main_genre",  # 장르별로 색상 구분
