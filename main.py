@@ -289,12 +289,10 @@ st.info(
 st.divider()
 st.header("📌 Section 7. 제작 국가 및 장르별 영화 편수 계층 구조")
 
-# 선버스트 차트 생성을 위해 국가 및 장르별 영화 편수 집계
 sunburst_df = (
     df.groupby(["nation", "main_genre"]).size().reset_index(name="movie_count")
 )
 
-# Plotly 선버스트(Sunburst) 생성
 fig7 = px.sunburst(
     sunburst_df,
     path=["nation", "main_genre"],
@@ -315,4 +313,52 @@ st.plotly_chart(fig7, use_container_width=True)
 st.info(
     "💡 **이 그래프로 알 수 있는 것:** "
     "주요 제작 국가별 영화 점유율과 함께 각 국가 내에서 주로 공급되는 장르적 특성과 구조적 분포를 동심원 계층으로 쉽게 비교할 수 있습니다."
+)
+
+
+# -----------------------------------------------------------------------------
+# [구역 8] 관객수 Top 10 영화 순위 (막대그래프)
+# -----------------------------------------------------------------------------
+st.divider()
+st.header("📌 Section 8. 관객수 Top 10 영화 순위")
+
+# 총 관객수 기준 상위 10개 영화 추출
+top10_df = df.nlargest(10, "total_audi").copy()
+
+# 시각적 내림차순 정렬을 위해 순위열 생성 및 정렬
+top10_df["rank"] = range(1, 11)
+top10_df = top10_df.sort_values(by="total_audi", ascending=True)
+
+# 막대그래프 생성
+fig8 = px.bar(
+    top10_df,
+    x="total_audi",
+    y="movieNm",
+    orientation="h",
+    color="total_audi",
+    color_continuous_scale="Viridis",
+    title="<b>역대영화 관객수와 영화을 1등부터10등까지 보여줘</b>",
+    labels={
+        "total_audi": "총 관객수 (명)",
+        "movieNm": "영화명",
+    },
+)
+
+# 마우스 오버(Hover) 시 영화명, 순위, 관객수 표출
+fig8.update_traces(
+    hoverinfo="all",
+    hovertemplate="<b>영화명</b>: %{y}<br><b>총 관객수</b>: %{x:,}명<extra></extra>",
+)
+
+fig8.update_layout(
+    coloraxis_showscale=False,
+    margin=dict(l=40, r=40, t=60, b=40),
+)
+
+st.plotly_chart(fig8, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "전체 216편 중 총 관객수가 가장 많은 상위 10개 흥행작의 순위와 관객수 격차를 한눈에 비교할 수 있습니다."
+)
 )
